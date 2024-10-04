@@ -3,16 +3,16 @@
 	"module": "index.ts",
 	"type": "module",
 	"devDependencies": {
-		"@biomejs/biome": "^1.6.3",
+		"@biomejs/biome": "^1.9.3",
 		"@types/bun": "latest"
 	},
 	"peerDependencies": {
-		"typescript": "^5.0.0"
+		"typescript": "^5.4.3"
 	},
 	"dependencies": {
-		"discord.js": "^14.14.1"
+		"discord.js": "^14.16.3"
 	},
 	"scripts": {
-		"lint": "bunx @biomejs/biome lint ./"
+		"check": "bunx @biomejs/biome check --write ./"
 	}
 }
