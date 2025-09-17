@@ -1,8 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
+import { Database } from "bun:sqlite"
 import { Client, GatewayIntentBits } from "discord.js";
 
 const TOKEN = process.env.TOKEN;
+
+const db = new Database('database.sqlite');
+db.run(`CREATE TABLE IF NOT EXISTS funny_word_counts (
+	user_id TEXT PRIMARY KEY,
+	frequency INTEGER DEFAULT 0,
+	frequency_r INTEGER DEFAULT 0
+)`);
+db.close();
 
 const client = new Client({
 	intents: [
