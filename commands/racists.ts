@@ -63,8 +63,7 @@ const racists = {
 			const sliceMentions = mentions.slice(offset, offset + ROWS_PER_CHUNK);
 			const ranks = slice.map((_, j) => String(offset + j + 1)).join("\n");
 			const users = sliceMentions.join("\n");
-			const totals = slice.map((r) => String(r.frequency)).join("\n");
-			const hardRs = slice.map((r) => String(r.frequency_r)).join("\n");
+			const totals = slice.map((r) => String(r.frequency) + " (" + String(r.frequency_r) + " hard Rs)").join("\n");
 
 			const embed = new EmbedBuilder()
 				.setColor(0x5865f2)
@@ -77,7 +76,6 @@ const racists = {
 					{ name: "#", value: ranks, inline: true },
 					{ name: "User", value: users, inline: true },
 					{ name: "Total", value: totals, inline: true },
-					{ name: "Hard R", value: hardRs, inline: true },
 				)
 				.setTimestamp();
 
