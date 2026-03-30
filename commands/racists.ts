@@ -76,10 +76,8 @@ const racists = {
 				.addFields(
 					{ name: "#", value: ranks, inline: true },
 					{ name: "User", value: users, inline: true },
-					{ name: "\u200B", value: "\u200B", inline: true },
 					{ name: "Total", value: totals, inline: true },
 					{ name: "Hard R", value: hardRs, inline: true },
-					{ name: "\u200B", value: "\u200B", inline: true },
 				)
 				.setTimestamp();
 
