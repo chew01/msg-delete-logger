@@ -1,18 +1,23 @@
 import { Database } from "bun:sqlite";
 import {
+	AttachmentBuilder,
 	type ChatInputCommandInteraction,
-	EmbedBuilder,
 	SlashCommandBuilder,
 } from "discord.js";
+import { renderLeaderboardTable } from "../lib/renderLeaderboardTable.ts";
 
-/** Discord allows at most 10 embeds per message. */
-const MAX_EMBEDS = 10;
-const ROWS_PER_CHUNK = 25;
-const MAX_ROWS = MAX_EMBEDS * ROWS_PER_CHUNK;
+const MAX_ROWS = 250;
+const MAX_LABEL_LEN = 40;
 
 type Row = { user_id: string; frequency: number; frequency_r: number };
 
-async function resolveMention(
+function truncateLabel(s: string): string {
+	const t = s.trim();
+	if (t.length <= MAX_LABEL_LEN) return t;
+	return `${t.slice(0, MAX_LABEL_LEN - 1)}…`;
+}
+
+async function resolveDisplayLabel(
 	interaction: ChatInputCommandInteraction,
 	userId: string,
 ): Promise<string> {
@@ -20,12 +25,12 @@ async function resolveMention(
 		const guild = interaction.guild;
 		if (guild) {
 			const member = await guild.members.fetch(userId).catch(() => null);
-			if (member) return member.toString();
+			if (member) return truncateLabel(member.displayName);
 		}
 		const user = await interaction.client.users.fetch(userId);
-		return user.toString();
+		return truncateLabel(user.username);
 	} catch {
-		return `<@${userId}>`;
+		return truncateLabel(`…${userId.slice(-6)}`);
 	}
 }
 
@@ -50,45 +55,35 @@ const racists = {
 			return;
 		}
 
+		await interaction.deferReply();
+
 		const totalInDb = rows.length;
 		const cappedRows = rows.slice(0, MAX_ROWS);
 
-		const mentions = await Promise.all(
-			cappedRows.map((row) => resolveMention(interaction, row.user_id)),
+		const labels = await Promise.all(
+			cappedRows.map((row) => resolveDisplayLabel(interaction, row.user_id)),
 		);
 
-		const embeds: EmbedBuilder[] = [];
-		for (let offset = 0; offset < cappedRows.length; offset += ROWS_PER_CHUNK) {
-			const slice = cappedRows.slice(offset, offset + ROWS_PER_CHUNK);
-			const sliceMentions = mentions.slice(offset, offset + ROWS_PER_CHUNK);
-			const ranks = slice.map((_, j) => String(offset + j + 1)).join("\n");
-			const users = sliceMentions.join("\n");
-			const totals = slice.map((r) => String(r.frequency) + " (" + String(r.frequency_r) + " hard Rs)").join("\n");
+		const leaderboardRows = cappedRows.map((row, i) => ({
+			rank: i + 1,
+			label: labels[i],
+			frequency: row.frequency,
+			frequency_r: row.frequency_r,
+		}));
 
-			const embed = new EmbedBuilder()
-				.setColor(0x5865f2)
-				.setTitle(
-					offset === 0
-						? "Funny word leaderboard"
-						: "Funny word leaderboard (continued)",
-				)
-				.addFields(
-					{ name: "#", value: ranks, inline: true },
-					{ name: "User", value: users, inline: true },
-					{ name: "Total", value: totals, inline: true },
-				)
-				.setTimestamp();
+		const footerText =
+			totalInDb > MAX_ROWS
+				? `Showing top ${MAX_ROWS} of ${totalInDb} users.`
+				: undefined;
 
-			if (offset === 0 && totalInDb > MAX_ROWS) {
-				embed.setFooter({
-					text: `Showing top ${MAX_ROWS} of ${totalInDb} users.`,
-				});
-			}
+		const png = renderLeaderboardTable(leaderboardRows, {
+			title: "Funny word leaderboard",
+			footerText,
+		});
 
-			embeds.push(embed);
-		}
-
-		await interaction.reply({ embeds });
+		await interaction.editReply({
+			files: [new AttachmentBuilder(png, { name: "leaderboard.png" })],
+		});
 	},
 };
 

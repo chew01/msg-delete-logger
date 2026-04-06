@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { REST, Routes, type ChatInputCommandInteraction, type SlashCommandBuilder } from "discord.js";
+import {
+	type ChatInputCommandInteraction,
+	REST,
+	Routes,
+	type SlashCommandBuilder,
+} from "discord.js";
 
 type Command = {
 	name: string;
@@ -43,6 +48,10 @@ for (const file of commandFiles) {
 
 const rest = new REST().setToken(TOKEN);
 
-console.log(`Started refreshing ${commands.length} global application (/) command(s).`);
+console.log(
+	`Started refreshing ${commands.length} global application (/) command(s).`,
+);
 await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-console.log(`Successfully reloaded ${commands.length} global application (/) command(s).`);
+console.log(
+	`Successfully reloaded ${commands.length} global application (/) command(s).`,
+);

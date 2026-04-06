@@ -2,12 +2,12 @@ import { Database } from "bun:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import {
+	type ChatInputCommandInteraction,
 	Client,
 	Collection,
 	Events,
 	GatewayIntentBits,
 	MessageFlags,
-	type ChatInputCommandInteraction,
 	type SlashCommandBuilder,
 } from "discord.js";
 

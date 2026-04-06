@@ -14,7 +14,7 @@ const createMessage = {
 		const frequencyR =
 			message.content.toLowerCase().match(FUNNY_WORD_R_REGEX)?.length || 0;
 
-		if (frequency == 0 && frequencyR == 0) return;
+		if (frequency === 0 && frequencyR === 0) return;
 
 		let reply = "";
 		if (frequencyR > 0) {
